@@ -62,7 +62,7 @@ function deleteCurrentNode() {
 
 <template>
     <div class="p-4 max-w-md mx-auto">
-        <h1 class="text-2xl font-bold mb-4">Tree View with Pinia</h1>
+        <h1 class="text-2xl font-bold mb-4">Tree View with Vertical Lines</h1>
 
         <div class="mb-4 flex space-x-2">
             <button @click="prepareAddNode(null)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
@@ -105,9 +105,11 @@ function deleteCurrentNode() {
             </div>
         </div>
 
-        <!-- TreeView component -->
+        <!-- TreeView component with vertical lines -->
         <div class="border rounded p-4 bg-white shadow-sm">
-            <TreeView :nodes="treeStore.treeData" @node-click="handleNodeClick" @node-toggle="handleNodeToggle" />
+            <div class="font-sans select-none">
+                <TreeView :nodes="treeStore.treeData" @node-click="handleNodeClick" @node-toggle="handleNodeToggle" />
+            </div>
         </div>
     </div>
 </template>
