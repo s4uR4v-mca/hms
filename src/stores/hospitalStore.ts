@@ -1,17 +1,12 @@
 // src/stores/treeStore.ts
+import type { HospitalGroupNode } from '@/model/hospital-group-node.dto'
+import type { ICallback } from '@/types/callback.type'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export interface TreeNode {
-  id: string
-  label: string
-  children?: TreeNode[]
-  isExpanded?: boolean
-}
-
-export const useTreeStore = defineStore('tree', () => {
+export const useHospitalStore = defineStore('hospital', () => {
   // State
-  const treeData = ref<TreeNode[]>([
+  const treeData = ref<HospitalGroupNode[]>([
     {
       id: '1',
       label: 'Root',
@@ -42,7 +37,7 @@ export const useTreeStore = defineStore('tree', () => {
 
   // Actions
   function toggleNodeExpansion(nodeId: string) {
-    const toggleNode = (nodes: TreeNode[]): boolean => {
+    const toggleNode = (nodes: HospitalGroupNode[]): boolean => {
       for (const node of nodes) {
         if (node.id === nodeId) {
           node.isExpanded = !node.isExpanded
@@ -59,14 +54,22 @@ export const useTreeStore = defineStore('tree', () => {
     toggleNode(treeData.value)
   }
 
-  function addNode(parentId: string | null, newNode: TreeNode) {
+  function addNode(parentId: string | null, newNode: HospitalGroupNode, callback: ICallback) {
     if (!parentId) {
       // Add to root level
       treeData.value.push(newNode)
-      return
+
+      if (
+        treeData.value.length > 0 &&
+        treeData.value[treeData.value.length - 1].id === newNode.id
+      ) {
+        callback(true)
+      } else {
+        callback(false)
+      }
     }
 
-    const addToParent = (nodes: TreeNode[]): boolean => {
+    const addToParent = (nodes: HospitalGroupNode[]): boolean => {
       for (const node of nodes) {
         if (node.id === parentId) {
           if (!node.children) {
@@ -83,11 +86,12 @@ export const useTreeStore = defineStore('tree', () => {
       return false
     }
 
-    addToParent(treeData.value)
+    const result = addToParent(treeData.value)
+    callback(result)
   }
 
-  function deleteNode(nodeId: string) {
-    const deleteFromNodes = (nodes: TreeNode[]): boolean => {
+  function deleteNode(nodeId: string, callback: ICallback) {
+    const deleteFromNodes = (nodes: HospitalGroupNode[]): boolean => {
       const index = nodes.findIndex((node) => node.id === nodeId)
 
       if (index !== -1) {
@@ -104,11 +108,12 @@ export const useTreeStore = defineStore('tree', () => {
       return false
     }
 
-    deleteFromNodes(treeData.value)
+    const result = deleteFromNodes(treeData.value)
+    callback(result)
   }
 
-  function updateNode(nodeId: string, updates: Partial<TreeNode>) {
-    const updateInNodes = (nodes: TreeNode[]): boolean => {
+  function updateNode(nodeId: string, updates: Partial<HospitalGroupNode>, callback: ICallback) {
+    const updateInNodes = (nodes: HospitalGroupNode[]): boolean => {
       for (const node of nodes) {
         if (node.id === nodeId) {
           Object.assign(node, updates)
@@ -123,12 +128,13 @@ export const useTreeStore = defineStore('tree', () => {
       return false
     }
 
-    updateInNodes(treeData.value)
+    const result = updateInNodes(treeData.value)
+    callback(result)
   }
 
   // Get a specific node by id
-  function getNodeById(nodeId: string): TreeNode | null {
-    const findNode = (nodes: TreeNode[]): TreeNode | null => {
+  function getNodeById(nodeId: string): HospitalGroupNode | null {
+    const findNode = (nodes: HospitalGroupNode[]): HospitalGroupNode | null => {
       for (const node of nodes) {
         if (node.id === nodeId) {
           return node
