@@ -1,15 +1,23 @@
 <script setup lang="ts">
+import EmptyState from '@/components/EmptyState.vue';
 import HmsClinicianAddEditModal from '@/components/HmsClinicianAddEditModal.vue';
 import HmsDeleteClinicianModal from '@/components/HmsDeleteClinicianModal.vue';
-import type { Clinician } from '@/model/clinician.dto';
-import type { HospitalGroupNode } from '@/model/hospital-group-node.dto';
+import type { Clinician } from '@/models/clinician.dto';
+import type { HospitalGroupNode } from '@/models/hospital-group-node.dto';
 import { RouteName } from '@/router/route-names';
 import { useClinicianStore } from '@/stores/clinicianStore';
 import { useHospitalStore } from '@/stores/hospitalStore';
-import { PhMagnifyingGlass, PhPencil, PhPlus, PhTrash } from '@phosphor-icons/vue';
+import { PhCaretLeft, PhMagnifyingGlass, PhPencil, PhPlus, PhTrash } from '@phosphor-icons/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+
+const router = useRouter();
+const gotoHome = () => {
+    router.push({
+        name: RouteName.HOME,
+    });
+};
 
 const tableCols = ['Full Name', 'Actions'];
 
@@ -66,17 +74,14 @@ const onDeleteClinicianModalAction = (isSuccess: boolean = false) => {
 
 
 const getTableRowColor = (index: number) => {
-    return index % 2 === 0 ? 'bg-white' : 'bg-blue-50'
+    return index % 2 === 0 ? 'bg-white' : 'bg-neutral-50'
 }
 
-const titleText = computed(() => {
-    return `Clinicians for \"${hospitalGroup.value?.label || ''}\"`
-})
-
-const showDataCountLabel = computed(() => {
+const countMetrics = computed(() => {
     const totalCount = clinicianData.value.filter((val) => val.hospital_id === hospitalId.value).length;
     const filteredCount = filteredData.value.length;
-    return `${filteredCount} of ${totalCount} record${filteredCount > 1 ? 's' : ''} displayed`;
+    // return `${filteredCount} of ${totalCount} record${filteredCount > 1 ? 's' : ''} displayed`;
+    return { totalCount: totalCount, filteredCount: filteredCount, suffix: `record${filteredCount > 1 ? 's' : ''} displayed` };
 })
 
 watch(
@@ -101,51 +106,68 @@ watch(
 <template>
     <div class="p-4 max-w-4xl mx-auto ">
         <div class="mb-2 flex space-x-2 justify-between place-items-center">
-            <h1 class="text-blue-500 text-lg font-bold">{{ titleText }}</h1>
+            <div class="flex place-items-center">
+                <button @click="gotoHome"
+                    class="text-neutral-900 font-bold  hover:bg-neutral-200  hover:text-neutral-800 py-2 px-2 mr-2 rounded-sm cursor-pointer">
+                    <PhCaretLeft class="inline mb-1" size="1rem" weight="bold" />
+                </button>
+                <h1 class="text-neutral-800 text-lg font-bold">Clinicians for: <span
+                        class="text-neutral-900 font-extrabold">{{
+                            hospitalGroup?.label
+                            || ''
+                        }}</span>
+                </h1>
+            </div>
             <button @click="onAddClinician"
-                class="border text-blue-500 font-semibold border-blue-500 hover:bg-blue-500 hover:text-white  px-3 py-1 rounded-sm cursor-pointer">
+                class="text-neutral-700 font-semibold  hover:bg-neutral-200  hover:text-neutral-800  px-3 py-2 rounded-sm cursor-pointer">
                 <PhPlus class="inline mb-1" size="1rem" weight="bold" /> Add Clinician
             </button>
         </div>
 
-        <div class="mb-2 flex space-x-2 justify-between place-items-center bg-blue-100 p-2">
-            <span class="text-sm">{{ showDataCountLabel }}</span>
-            <div
-                class="flex place-items-center border border-gray-400 focus:border-blue-400 bg-blue-50 rounded-md w-xs justify-between">
+        <div class="mb-2 flex space-x-2 justify-between place-items-center bg-neutral-100 p-2">
+            <p class="text-sm text-neutral-600"><span class="font-semibold text-neutral-900">{{
+                countMetrics.filteredCount }}</span> of
+                <span class="font-semibold text-neutral-900">{{
+                    countMetrics.totalCount
+                }}</span> {{ countMetrics.suffix }}
+            </p>
+            <div class="flex place-items-center border border-neutral-400 bg-white rounded-md w-xs justify-between">
                 <input type="text" v-model="filter" class="px-4 py-1 text-sm focus:outline-none grow"
                     placeholder="Search" @keyup.enter="onFilterClick" />
                 <PhMagnifyingGlass @click="onFilterClick"
-                    class="bg-blue-200 p-2 text-blue-500 m-0.5 rounded-tr-sm rounded-br-sm cursor-pointer hover:bg-blue-300 hover:text-blue-100"
+                    class="bg-neutral-200 p-2 text-neutral-600 m-0.5 rounded-tr-sm rounded-br-sm cursor-pointer hover:bg-neutral-300 hover:text-neutral-800"
                     size="2rem" weight="bold" />
             </div>
 
         </div>
 
-        <table class="w-full">
+        <table class="w-full" v-if="filteredData.length">
             <thead>
-                <tr class="bg-blue-100">
-                    <th v-for="(col, index) in tableCols" :key="index" class="text-left py-3 px-2 font-semibold">{{ col
-                    }}
+                <tr class="bg-neutral-100 border border-neutral-200">
+                    <th v-for="(col, index) in tableCols" :key="index"
+                        class="text-left py-3 px-2 font-medium text-neutral-900">{{ col
+                        }}
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(clinician, index) in filteredData" :key="clinician.id" class=" border border-blue-100"
+                <tr v-for="(clinician, index) in filteredData" :key="clinician.id" class=" border border-neutral-200"
                     :class="getTableRowColor(index)">
-                    <td class="py-3 px-2">{{ `${clinician.first_name} ${clinician.last_name}` }}</td>
+                    <td class="text-neutral-700 py-3 px-2">{{ `${clinician.first_name} ${clinician.last_name}` }}</td>
                     <td class="py-3 px-2">
                         <div class="flex">
                             <PhPencil @click="onEditClinician(clinician)"
-                                class="text-blue-500 cursor-pointer hover:bg-blue-100 px-2 rounded" size="2.1rem" />
+                                class="text-sky-700 cursor-pointer hover:bg-sky-100 px-2 rounded" size="2.1rem" />
                             <PhTrash @click="onDeleteClinician(clinician)"
-                                class="text-red-500 cursor-pointer hover:bg-red-100 px-2 rounded" size="2.1rem" />
+                                class="text-orange-800 cursor-pointer hover:bg-orange-100 px-2 rounded" size="2.1rem" />
                         </div>
 
                     </td>
                 </tr>
             </tbody>
         </table>
-
+        <EmptyState v-else header="No Clinicians Found"
+            :msg="`Oops.. No clinicians found for ${hospitalGroup?.label} ${filter ? ` with filter: ${filter}` : ''}`" />
     </div>
 
     <HmsClinicianAddEditModal v-if="isShowAddModal" :hospital-id="hospitalGroup?.id || ''"

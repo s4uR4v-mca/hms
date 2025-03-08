@@ -6,11 +6,12 @@ import HmsOptionMenu from '@/components/HmsOptionMenu.vue';
 import HmsEditGroupModal from '@/components/HmsEditGroupModal.vue'
 import HmsNewGroupModal from '@/components/HmsNewGroupModal.vue';
 import HmsDeleteGroupModal from '@/components/HmsDeleteGroupModal.vue';
-import type { HospitalGroupNode } from '@/model/hospital-group-node.dto';
+import type { HospitalGroupNode } from '@/models/hospital-group-node.dto';
 import { PhPlus } from '@phosphor-icons/vue';
 import { useRouter } from 'vue-router';
 import { RouteName } from '@/router/route-names';
 import type { IQueryParam } from '@/router/query.type';
+import EmptyState from '@/components/EmptyState.vue';
 const router = useRouter();
 
 
@@ -102,7 +103,7 @@ const onCreateGroupModalAction = (isSuccess: boolean = false) => {
     }
 }
 
-const onAddRemoveChildren = () => {
+const onAddRemoveClinician = () => {
     if (activeNode.value) {
         const queryParam = {
             h_id: activeNode.value?.id
@@ -138,24 +139,26 @@ onBeforeUnmount((): void => {
 
 <template>
     <div class="p-4 max-w-4xl mx-auto ">
-        <div class="mb-2 flex space-x-2 justify-between place-items-center ">
-            <h1 class="text-blue-500 text-lg font-bold">Hospital Hierarchy</h1>
+        <div class="mb-1 flex space-x-2 justify-between place-items-center ">
+            <h1 class="text-neutral-800 text-lg font-bold">Hospital Hierarchy</h1>
             <button @click="onCreateGroup"
-                class="border text-blue-500 font-semibold border-blue-500 hover:bg-blue-500 hover:text-white  px-3 py-1 rounded-sm cursor-pointer">
-                <PhPlus class="inline mb-1" size="1rem" weight="bold" /> Add Root Node
+                class=" text-neutral-700 font-semibold  hover:bg-neutral-200  hover:text-neutral-800  px-3 py-2 rounded-sm cursor-pointer">
+                <PhPlus class="inline mb-1" size="1rem" weight="bold" /> Add Hospital
             </button>
         </div>
 
         <!-- TreeView component with vertical lines -->
-        <div class="border rounded p-4 bg-white shadow-sm">
-            <div class="font-sans select-none">
+        <div class="border border-neutral-200 rounded p-4 bg-white shadow-sm">
+            <div class="font-sans select-none" v-if="hospitalStore.treeData.length">
                 <HmsTree :nodes="hospitalStore.treeData" @node-toggle="handleNodeToggle"
                     @option-click="showContextMenu" />
             </div>
+
+            <EmptyState header="No Hospital Found" msg="Start building the tree by adding hospitals" v-else />
         </div>
     </div>
 
-    <HmsOptionMenu v-if="isShowContextMenu" @on-edit-group="onEditGroup" @on-add-remove-children="onAddRemoveChildren"
+    <HmsOptionMenu v-if="isShowContextMenu" @on-edit-group="onEditGroup" @on-add-remove-clinician="onAddRemoveClinician"
         @on-create-child-group="onCreateGroup" @on-remove-group="onRemoveGroup"
         :style="{ top: position.y + 'px', left: position.x + 'px' }" />
 

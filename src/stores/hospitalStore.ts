@@ -1,41 +1,11 @@
-// src/stores/treeStore.ts
-import type { HospitalGroupNode } from '@/model/hospital-group-node.dto'
+import type { HospitalGroupNode } from '@/models/hospital-group-node.dto'
 import type { ICallback } from '@/types/callback.type'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { useStorage } from '@vueuse/core'
 
 export const useHospitalStore = defineStore('hospital', () => {
-  // State
-  const treeData = ref<HospitalGroupNode[]>([
-    {
-      id: '1',
-      label: 'Root',
-      isExpanded: true,
-      children: [
-        {
-          id: '1-1',
-          label: 'Item 1',
-          children: [
-            { id: '1-1-1', label: 'Subitem 1' },
-            { id: '1-1-2', label: 'Subitem 2' },
-          ],
-        },
-        {
-          id: '1-2',
-          label: 'Item 2',
-          children: [{ id: '1-2-1', label: 'Subitem 1' }],
-        },
-        { id: '1-3', label: 'Item 3' },
-      ],
-    },
-    {
-      id: '2',
-      label: 'Another Root',
-      children: [{ id: '2-1', label: 'Item 1' }],
-    },
-  ])
+  const treeData = useStorage<HospitalGroupNode[]>('hospital-groups', [])
 
-  // Actions
   function toggleNodeExpansion(nodeId: string) {
     const toggleNode = (nodes: HospitalGroupNode[]): boolean => {
       for (const node of nodes) {
@@ -132,7 +102,6 @@ export const useHospitalStore = defineStore('hospital', () => {
     callback(result)
   }
 
-  // Get a specific node by id
   function getNodeById(nodeId: string): HospitalGroupNode | null {
     const findNode = (nodes: HospitalGroupNode[]): HospitalGroupNode | null => {
       for (const node of nodes) {

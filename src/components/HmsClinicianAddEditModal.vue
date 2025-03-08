@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { Clinician } from '@/model/clinician.dto';
+import type { Clinician } from '@/models/clinician.dto';
 import { useClinicianStore } from '@/stores/clinicianStore';
-import { PhX } from '@phosphor-icons/vue';
+import useVuelidate from '@vuelidate/core';
 import { computed, onBeforeMount, ref } from 'vue';
+import { useClinicianValidator } from '@/composables/useClinicianValidator';
+import CommonModalHeader from './modals/CommonModalHeader.vue';
+import CommonModalFooter from './modals/CommonModalFooter.vue';
+
 
 const props = defineProps<{ hospitalId: string, hospitalName: string, id?: string, firstName?: string, lastName?: string }>();
 
@@ -13,14 +17,28 @@ const clinicianStore = useClinicianStore();
 const newFirstName = ref<string>('');
 const newLastName = ref<string>('');
 
+const v$ = useVuelidate(
+    useClinicianValidator().ruleAddEditClinician,
+    {
+        newFirstName,
+    },
+    { $autoDirty: true },
+);
+
 const onClose = () => {
     emits('onCancel')
 }
 
-const onConfirm = () => {
+const onConfirm = async () => {
     if (!props.hospitalId) {
         return;
     }
+
+    const isValidData = await v$?.value.$validate();
+    if (!isValidData) {
+        return;
+    }
+
     if (props.id) {
         // Perform update action
         clinicianStore.updateClinician(props.id, props.hospitalId, { first_name: newFirstName.value, last_name: newLastName.value }, (status: boolean) => {
@@ -29,7 +47,6 @@ const onConfirm = () => {
             }
         })
     } else {
-        // Perform add action
         const newClinician = {
             id: Date.now().toString(), // Creating the id from the current timestamp
             first_name: newFirstName.value,
@@ -50,7 +67,7 @@ const titleText = computed(() => {
 })
 
 const msg = computed(() => {
-    return props.id ? `Edit clinician for \"${props.hospitalName || ''}\"` : `Add clinician for \"${props.hospitalName || ''}\"`;
+    return props.id ? "Edit clinician for " : "Add clinician for ";
 })
 
 const buttonText = computed(() => {
@@ -70,31 +87,23 @@ onBeforeMount(() => {
 
             <div class="relative px-4 rounded-md py-4 z-10 w-full max-w-md bg-white shadow-2xl overflow-hidden mb-[12rem]"
                 @click.stop>
-                <div class="flex items-center justify-between ">
-                    <h3 class="text-lg font-medium text-gray-900">{{ titleText }}</h3>
-                    <PhX weight="bold" @click="onClose" class="text-2xl cursor-pointer  hover:bg-gray-100 p-1" />
-                </div>
+                <CommonModalHeader :title="titleText" @on-close="onClose" />
 
                 <div class="flex flex-col my-8">
-                    <p class="text-gray-600 text-sm m-1">{{ msg }}</p>
+                    <p class="text-neutral-800 text-sm m-1">{{ msg }}<span class="text-neutral-800 font-semibold">{{
+                        props.hospitalName }}</span></p>
                     <input v-model="newFirstName"
-                        class="px-4 py-2 border border-gray-400  rounded-md focus:border-green-600 focus:outline-none"
+                        class="px-4 py-2 border border-neutral-300  rounded-md focus:border-neutral-700 focus:outline-none mb-3"
                         placeholder="Enter First Name" />
+                    <span class="ml-2 block text-sm text-red-500">
+                        {{ v$.newFirstName.$errors[0]?.$message }}
+                    </span>
                     <input v-model="newLastName"
-                        class="px-4 py-2 mt-4 border border-gray-400  rounded-md focus:border-green-600 focus:outline-none"
+                        class="px-4 py-2 border border-neutral-300  rounded-md focus:border-neutral-700 focus:outline-none"
                         placeholder="Enter Last Name" />
                 </div>
 
-                <div class=" bg-gray-50 flex justify-end space-x-2">
-                    <button @click="onClose"
-                        class=" hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 rounded cursor-pointer">
-                        Cancel
-                    </button>
-                    <button @click="onConfirm"
-                        class=" hover:bg-blue-100 font-semibold py-2 px-4 rounded text-blue-800 cursor-pointer">
-                        {{ buttonText }}
-                    </button>
-                </div>
+                <CommonModalFooter :button-text="buttonText" @on-confirm="onConfirm" />
             </div>
         </div>
     </Teleport>

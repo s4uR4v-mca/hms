@@ -1,41 +1,11 @@
-import type { Clinician } from '@/model/clinician.dto'
+import type { Clinician } from '@/models/clinician.dto'
 import type { ICallback } from '@/types/callback.type'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useStorage } from '@vueuse/core'
 
 export const useClinicianStore = defineStore('clinician', () => {
-  const clinicianData = ref<Clinician[]>([
-    {
-      id: '1',
-      first_name: 'Saurav',
-      last_name: 'Ganguly',
-      hospital_id: '1',
-    },
-    {
-      id: '2',
-      first_name: 'Michael',
-      last_name: 'Jackson',
-      hospital_id: '1',
-    },
-    {
-      id: '3',
-      first_name: 'John',
-      last_name: 'Wilson',
-      hospital_id: '1',
-    },
-    {
-      id: '4',
-      first_name: 'Amitava',
-      last_name: 'Basak',
-      hospital_id: '1-1',
-    },
-    {
-      id: '5',
-      first_name: 'Gourav',
-      last_name: 'Kundu',
-      hospital_id: '2-2',
-    },
-  ])
+  const clinicianData = useStorage<Clinician[]>('clinicians', [])
 
   const filteredData = ref<Clinician[]>([])
 
@@ -57,7 +27,6 @@ export const useClinicianStore = defineStore('clinician', () => {
             )),
       )
     }
-    console.log(clinicianData.value)
     findClinicians(clinicianData.value)
   }
 

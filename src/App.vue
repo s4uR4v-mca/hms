@@ -10,12 +10,11 @@ const gotoHome = () => {
 }
 </script>
 
-<template class="bg-blue-100">
-  <header class="p-4 bg-blue-300 flex">
+<template>
+  <header class=" p-3 bg-neutral-800 flex">
     <h1 @click="gotoHome"
-      class="text-2xl font-bold min-w-4xl m-auto flex text-blue-900 px-3 hover:underline hover:text-blue-700 cursor-pointer">
-      Hospital
-      Management System
+      class="text-2xl font-bold min-w-4xl m-auto flex text-neutral-200 px-3 hover:text-neutral-300 cursor-pointer">
+      Hospital Management System
     </h1>
   </header>
   <div>

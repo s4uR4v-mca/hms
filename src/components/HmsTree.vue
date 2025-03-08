@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { PhMinusSquare, PhPlusSquare, PhDotsThreeVertical, PhHospital, PhFirstAidKit } from '@phosphor-icons/vue';
-import type { HospitalGroupNode } from '@/model/hospital-group-node.dto';
+import type { HospitalGroupNode } from '@/models/hospital-group-node.dto';
 
 const props = defineProps<{
     parentId?: string;
@@ -39,23 +39,23 @@ function onChildOptionClickReceived(item: HospitalGroupNode, event: MouseEvent) 
     <ul class="list-none p-0 m-0">
         <li v-for="(node, index) in nodes" :key="node.id" class="relative">
             <!-- Vertical line from parent to this node (except for root level) -->
-            <div v-if="currentLevel > 0" class="absolute border-l border-gray-300"
+            <div v-if="currentLevel > 0" class="absolute border-l border-neutral-300"
                 style="top: 0; bottom: 0; left: -1.25rem;"></div>
 
             <div class="relative my-1">
                 <!-- Horizontal connector line -->
-                <div v-if="currentLevel > 0" class="absolute border-t border-gray-300 w-4"
+                <div v-if="currentLevel > 0" class="absolute border-t border-neutral-300 w-4"
                     style="top: 50%; left: -1.25rem;"></div>
 
                 <!-- Node content -->
-                <div class="flex items-center py-2 px-1 rounded hover:bg-gray-100">
+                <div class="flex items-center py-2 px-1 rounded hover:bg-neutral-100">
                     <div v-if="hasChildren(node)" class="inline-block w-4 text-center -ml-2 mr-3 text-xs z-10"
                         @click.stop="toggleNode(node)">
-                        <PhMinusSquare class="text-lg font-bold text-green-500" size="1.2rem" v-if="node.isExpanded" />
-                        <PhPlusSquare class="text-lg font-bold text-orange-500" size="1.2rem" v-else />
+                        <PhMinusSquare class="text-lg font-bold text-sky-700" size="1.2rem" v-if="node.isExpanded" />
+                        <PhPlusSquare class="text-lg font-bold text-orange-700" size="1.2rem" v-else />
                     </div>
 
-                    <div class="mr-2 text-gray-400 text-lg">
+                    <div class="mr-2 text-neutral-400 text-lg">
                         <PhFirstAidKit v-if="props.parentId" weight="regular" size="1.5rem" />
                         <PhHospital v-else weight="regular" size="1.5rem" />
                     </div>
@@ -72,7 +72,7 @@ function onChildOptionClickReceived(item: HospitalGroupNode, event: MouseEvent) 
                 <!-- Children container with vertical lines -->
                 <div v-if="node.isExpanded && node.children" class="relative ml-6">
                     <!-- Vertical line from this node to last child -->
-                    <div v-if="!isLastNode(index)" class="absolute border-l border-gray-300"
+                    <div v-if="!isLastNode(index)" class="absolute border-l border-neutral-300"
                         style="top: 1rem; bottom: -0.5rem; left: -1.25rem;"></div>
 
                     <!-- Recursive component for children -->
