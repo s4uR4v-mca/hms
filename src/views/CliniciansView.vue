@@ -14,6 +14,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { useHmsNotification } from '@/composables/useHmsNotification';
 import { HmsNotificationEnum } from '@/types/notification.type';
+import { watchDebounced } from '@vueuse/core';
 const { addNotification } = useHmsNotification();
 
 const router = useRouter();
@@ -40,6 +41,10 @@ const { clinicianData, filteredData } = storeToRefs(clinicianStore);
 
 const onFilterClick = () => {
     clinicianStore.filterCliniciansForHospital(hospitalId.value, filter.value)
+}
+
+const onFilterWithDebounce = (filter: string) => {
+    clinicianStore.filterCliniciansForHospital(hospitalId.value, filter)
 }
 
 const activeClinician = ref<Clinician | null>(null);
@@ -117,6 +122,14 @@ const notifyUser = (type: HmsNotificationEnum, title: string, msg: string, durat
     )
 }
 
+watchDebounced(
+    filter,
+    (newValue) => {
+        onFilterWithDebounce(newValue)
+    },
+    { debounce: 500, maxWait: 5000 }
+)
+
 watch(
     route,
     async (routeValue) => {
@@ -151,7 +164,7 @@ watch(
                         }}</span>
                 </h1>
             </div>
-            <button @click="onAddClinician"
+            <button @click="onAddClinician" data-test="add-clinician-btn"
                 class="text-neutral-700 font-semibold  hover:bg-neutral-200  hover:text-neutral-800  px-3 py-2 rounded-sm cursor-pointer">
                 <PhPlus class="inline mb-1" size="1rem" weight="bold" /> Add Clinician
             </button>
@@ -162,7 +175,7 @@ watch(
                 countMetrics.filteredCount }}</span> of
                 <span class="font-semibold text-neutral-900">{{
                     countMetrics.totalCount
-                }}</span> {{ countMetrics.suffix }}
+                    }}</span> {{ countMetrics.suffix }}
             </p>
             <div class="flex place-items-center border border-neutral-400 bg-white rounded-md w-xs justify-between">
                 <input type="text" v-model="filter" class="px-4 py-1 text-sm focus:outline-none grow"
@@ -199,7 +212,7 @@ watch(
                 </tr>
             </tbody>
         </table>
-        <EmptyState v-else header="No Clinicians Found"
+        <EmptyState v-else header="No Clinicians Found" data-test="empty-state"
             :msg="`Oops.. No clinicians found for ${hospitalGroup?.label} ${filter ? ` with filter: ${filter}` : ''}`" />
     </div>
 

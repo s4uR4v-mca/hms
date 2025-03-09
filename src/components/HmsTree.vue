@@ -10,14 +10,14 @@ const props = defineProps<{
     level?: number; // Track the nesting level
 }>();
 
-const emit = defineEmits(['node-toggle', 'option-click']);
+const emit = defineEmits(['nodeToggle', 'optionClick']);
 
 const defaultIndent = 6; // Using Tailwind spacing units (6 = 1.5rem)
 const indentation = computed(() => props.indent || defaultIndent);
 const currentLevel = computed(() => props.level || 0);
 
 function toggleNode(node: HospitalGroupNode) {
-    emit('node-toggle', node.id);
+    emit('nodeToggle', node.id);
 }
 
 // Check if a node has children
@@ -31,8 +31,12 @@ function isLastNode(index: number): boolean {
 }
 
 function onChildOptionClickReceived(item: HospitalGroupNode, event: MouseEvent) {
-    emit('option-click', item, event);
+    emit('optionClick', item, event);
 }
+
+const isRoot = computed(() => {
+    return props.parentId == null;
+})
 </script>
 
 <template>
@@ -48,11 +52,14 @@ function onChildOptionClickReceived(item: HospitalGroupNode, event: MouseEvent) 
                     style="top: 50%; left: -1.25rem;"></div>
 
                 <!-- Node content -->
-                <div class="flex items-center py-2 px-1 rounded hover:bg-neutral-100">
+                <div class="flex items-center py-2 px-1 rounded hover:bg-neutral-100"
+                    :data-test="isRoot ? 'root' : 'child'">
                     <div v-if="hasChildren(node)" class="inline-block w-4 text-center -ml-2 mr-3 text-xs z-10"
-                        @click.stop="toggleNode(node)">
-                        <PhMinusSquare class="text-lg font-bold text-sky-700" size="1.2rem" v-if="node.isExpanded" />
-                        <PhPlusSquare class="text-lg font-bold text-orange-700" size="1.2rem" v-else />
+                        data-test="toggle" @click="toggleNode(node)">
+                        <PhMinusSquare class="text-lg font-bold text-sky-700" size="1.2rem" data-test="icon-expanded"
+                            v-if="node.isExpanded" />
+                        <PhPlusSquare class="text-lg font-bold text-orange-700" size="1.2rem" data-test="icon-collapsed"
+                            v-else />
                     </div>
 
                     <div class="mr-2 text-neutral-400 text-lg">
@@ -62,22 +69,20 @@ function onChildOptionClickReceived(item: HospitalGroupNode, event: MouseEvent) 
 
                     <span class="text-md">{{ node.label }}</span>
                     <div>
-                        <PhDotsThreeVertical class="text-lg ml-1 cursor-pointer" weight="bold"
-                            @click="emit('option-click', node, $event)" />
+                        <PhDotsThreeVertical class="text-lg ml-1 cursor-pointer" weight="bold" data-test="option-icon"
+                            @click="emit('optionClick', node, $event)" />
                     </div>
-
-
                 </div>
 
-                <!-- Children container with vertical lines -->
+                <!-- Adding children nodes with vertical lines if expanded or current node having any child -->
                 <div v-if="node.isExpanded && node.children" class="relative ml-6">
-                    <!-- Vertical line from this node to last child -->
+                    <!-- Adding vertical line from this node to last child -->
                     <div v-if="!isLastNode(index)" class="absolute border-l border-neutral-300"
                         style="top: 1rem; bottom: -0.5rem; left: -1.25rem;"></div>
 
-                    <!-- Recursive component for children -->
+                    <!-- Recursively calling the HmsTree component to create the next tree depth -->
                     <HmsTree :parent-id="node.id" :nodes="node.children" :indent="indentation" :level="currentLevel + 1"
-                        @node-toggle="$emit('node-toggle', $event)" @option-click="onChildOptionClickReceived" />
+                        @node-toggle="$emit('nodeToggle', $event)" @option-click="onChildOptionClickReceived" />
                 </div>
             </div>
         </li>

@@ -4,7 +4,7 @@ import HmsTree from '@/components/HmsTree.vue';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import HmsOptionMenu from '@/components/HmsOptionMenu.vue';
 import HmsEditGroupModal from '@/components/HmsEditGroupModal.vue'
-import HmsNewGroupModal from '@/components/HmsNewGroupModal.vue';
+import HmsAddGroupModal from '@/components/HmsAddGroupModal.vue';
 import HmsDeleteGroupModal from '@/components/HmsDeleteGroupModal.vue';
 import type { HospitalGroupNode } from '@/models/hospital-group-node.dto';
 import { PhPlus } from '@phosphor-icons/vue';
@@ -157,7 +157,7 @@ onBeforeUnmount((): void => {
     <div class="p-4 max-w-4xl mx-auto ">
         <div class="mb-1 flex space-x-2 justify-between place-items-center ">
             <h1 class="text-neutral-800 text-lg font-bold">Hospital Hierarchy</h1>
-            <button @click="onCreateGroup"
+            <button @click="onCreateGroup" data-test="add-root-btn"
                 class=" text-neutral-700 font-semibold  hover:bg-neutral-200  hover:text-neutral-800  px-3 py-2 rounded-sm cursor-pointer">
                 <PhPlus class="inline mb-1" size="1rem" weight="bold" /> Add Hospital
             </button>
@@ -170,7 +170,8 @@ onBeforeUnmount((): void => {
                     @option-click="showContextMenu" />
             </div>
 
-            <EmptyState header="No Hospital Found" msg="Start building the tree by adding hospitals" v-else />
+            <EmptyState header="No Hospital Found" msg="Start building the tree by adding hospitals" v-else
+                data-test="empty-state" />
         </div>
     </div>
 
@@ -182,7 +183,7 @@ onBeforeUnmount((): void => {
         @on-cancel="isShowEditModal = false" @on-success="onEditGroupModalAction(true)"
         @on-error="onEditGroupModalAction" />
 
-    <HmsNewGroupModal v-if="isShowCreateGroupModal" :parent-id="activeNode?.id || null"
+    <HmsAddGroupModal v-if="isShowCreateGroupModal" :parent-id="activeNode?.id || null"
         :is-root="activeNode ? false : true" @on-cancel="isShowCreateGroupModal = false"
         @on-success="onCreateGroupModalAction(true)" @on-error="onCreateGroupModalAction" />
 

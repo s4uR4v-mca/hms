@@ -68,7 +68,7 @@ const inputMsg = computed(() => {
 
                 <div class="flex flex-col my-8">
                     <p class="text-neutral-800 text-sm m-1">{{ inputMsg }}</p>
-                    <input v-model="newGroupName"
+                    <input v-model="newGroupName" data-test="input-new-group"
                         class="px-4 py-2 border border-neutral-300 rounded-md focus:border-neutral-700 focus:outline-none"
                         placeholder="Enter Group Name" />
                     <span class="ml-2 block text-sm text-red-500">

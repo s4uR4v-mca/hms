@@ -1,0 +1,32 @@
+// import { VueWrapper, mount } from '@vue/test-utils'
+// import { beforeEach, expect, it } from 'vitest'
+// import { describe } from 'vitest'
+// import CliniciansView from '@/views/CliniciansView.vue'
+// import { createPinia, setActivePinia } from 'pinia'
+// import HmsClinicianAddEditModal from '../HmsClinicianAddEditModal.vue'
+
+// describe('ClinicianView', () => {
+//   let wrapper: VueWrapper
+//   beforeEach(() => {
+//     setActivePinia(createPinia())
+//     wrapper = mount(CliniciansView)
+//   })
+
+//   it('renders the empty state initially', () => {
+//     const tree = wrapper.find('[data-test="empty-state"]')
+//     expect(tree.exists()).toBe(true)
+//   })
+
+//   it('renders add clinician button', async () => {
+//     const addClinicianBtn = wrapper.find('[data-test="add-clinician-btn"]')
+//     expect(addClinicianBtn.exists()).toBe(true)
+//   })
+
+//   it('check add clinician button click', async () => {
+//     const addRootNodeBtn = wrapper.find('[data-test="add-root-btn"]')
+//     await addRootNodeBtn.trigger('click')
+//     const addClinicianModal = wrapper.findComponent(HmsClinicianAddEditModal)
+
+//     expect(addClinicianModal.exists()).toBe(true)
+//   })
+// })
