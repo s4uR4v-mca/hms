@@ -10,7 +10,7 @@ import CommonModalFooter from './modals/CommonModalFooter.vue';
 
 const props = defineProps<{ hospitalId: string, hospitalName: string, id?: string, firstName?: string, lastName?: string }>();
 
-const emits = defineEmits(['onSuccess', 'onCancel'])
+const emits = defineEmits(['onSuccess', 'onError', 'onCancel'])
 
 const clinicianStore = useClinicianStore();
 
@@ -39,8 +39,14 @@ const onConfirm = async () => {
         return;
     }
 
+    // Check for duplicate clinician name
+    const duplicateClinicians = clinicianStore.clinicianData.filter((x) => x.hospital_id === props.hospitalId && x.id !== props.id && x.first_name === newFirstName.value && x.last_name === newLastName.value);
+    if (duplicateClinicians.length) {
+        emits('onError', false, 'Clinicians exists with same name for this hospital group');
+        return;
+    }
+
     if (props.id) {
-        // Perform update action
         clinicianStore.updateClinician(props.id, props.hospitalId, { first_name: newFirstName.value, last_name: newLastName.value }, (status: boolean) => {
             if (status) {
                 emits('onSuccess')

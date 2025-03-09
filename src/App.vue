@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { RouteName } from './router/route-names';
+import HmsNotification from './components/HmsNotification.vue';
 
 const router = useRouter()
 const gotoHome = () => {
@@ -19,5 +20,6 @@ const gotoHome = () => {
   </header>
   <div>
     <RouterView />
+    <HmsNotification />
   </div>
 </template>

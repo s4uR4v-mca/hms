@@ -9,7 +9,7 @@ import { useClinicianValidator } from '@/composables/useClinicianValidator';
 
 const { parentId, isRoot = false } = defineProps<{ parentId?: string | null, isRoot?: boolean }>();
 
-const emits = defineEmits(['onSuccess', 'onCancel'])
+const emits = defineEmits(['onSuccess', 'onError', 'onCancel'])
 
 const hospitalStore = useHospitalStore();
 const newGroupName = ref<string>('');
@@ -30,6 +30,13 @@ const onClose = () => {
 const onConfirm = async () => {
     const isValidData = await v$?.value.$validate();
     if (!isValidData) {
+        return;
+    }
+
+    // Check for duplicate hospital group name
+    const duplicateGroups = hospitalStore.hospitalGroupData.filter((x) => x.label === newGroupName.value);
+    if (duplicateGroups.length) {
+        emits('onError', false, 'Another hospital group already exists with the same name')
         return;
     }
 

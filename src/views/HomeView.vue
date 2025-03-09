@@ -13,9 +13,12 @@ import { RouteName } from '@/router/route-names';
 import type { IQueryParam } from '@/router/query.type';
 import EmptyState from '@/components/EmptyState.vue';
 const router = useRouter();
+import { useHmsNotification } from '@/composables/useHmsNotification';
 
+import { HmsNotificationEnum } from '@/types/notification.type';
 
-// Use the tree store
+const { addNotification } = useHmsNotification();
+
 const hospitalStore = useHospitalStore();
 
 const handleNodeToggle = (nodeId: string) => {
@@ -31,13 +34,12 @@ const activeNode = ref<HospitalGroupNode | null>(null);
 
 const showContextMenu = (item: HospitalGroupNode, e: MouseEvent): void => {
     hideContextMenu(e);
-    // Set the active item
+
     activeNode.value = item;
 
     const target = e.target as HTMLElement;
     const rect = target.getBoundingClientRect();
 
-    // Position the menu next to the button
     position.value.x = rect.x + 5; // Position to the right with a small gap
     position.value.y = rect.y;
 
@@ -48,26 +50,21 @@ const showContextMenu = (item: HospitalGroupNode, e: MouseEvent): void => {
         position.value.x = rect.left - 197; // 192px + 5px gap
     }
 
-    // Also check vertical positioning
     const bottomEdge = position.value.y + 10 * 4; // Approximate height
     if (bottomEdge > window.innerHeight) {
         position.value.y = window.innerHeight - (10 * 4) - 10;
     }
 
-    // Show the menu
     isShowContextMenu.value = true;
 
-    // Prevent event propagation
     e.stopPropagation();
 };
 
 const hideContextMenu = (e: MouseEvent): void => {
-    // Don't hide if clicking within the menu
     if (contextMenuRef.value && contextMenuRef.value.contains(e.target as HTMLUListElement)) {
         return;
     }
 
-    // Don't hide if clicking one of the trigger buttons (we handle that in showContextMenu)
     const isButton = divRefs.value.some(btn => btn && btn.contains(e.target as Node));
     if (isButton) {
         return;
@@ -78,11 +75,14 @@ const hideContextMenu = (e: MouseEvent): void => {
 
 
 const isShowEditModal = ref<boolean>(false);
-const onEditGroupModalAction = (isSuccess: boolean = false) => {
+const onEditGroupModalAction = (isSuccess: boolean = false, errMsg: string = '') => {
     isShowEditModal.value = false;
     activeNode.value = null;
     if (isSuccess) {
-        // Perform action on success
+        notifyUser(HmsNotificationEnum.SUCCESS, 'Update Success', 'Successfully updated hospital group name')
+    } else {
+        notifyUser(HmsNotificationEnum.ERROR, 'Update Failure', errMsg ?? 'Failed to update hospital group name')
+
     }
 }
 
@@ -95,11 +95,14 @@ const onCreateGroup = () => {
     isShowCreateGroupModal.value = true;
 }
 
-const onCreateGroupModalAction = (isSuccess: boolean = false) => {
+const onCreateGroupModalAction = (isSuccess: boolean = false, errMsg: string = '') => {
     isShowCreateGroupModal.value = false;
     activeNode.value = null;
     if (isSuccess) {
-        // Perform action on success
+        notifyUser(HmsNotificationEnum.SUCCESS, 'Create Success', 'Successfully created new hospital group')
+    } else {
+        notifyUser(HmsNotificationEnum.ERROR, 'Create Failure', errMsg ?? 'Failed to create new hospital group')
+
     }
 }
 
@@ -124,8 +127,21 @@ const onRemoveGroupModalAction = (isSuccess: boolean = false) => {
     isShowDeleteGroupModal.value = false;
     activeNode.value = null;
     if (isSuccess) {
-        // Perform action on success
+        notifyUser(HmsNotificationEnum.SUCCESS, 'Delete Success', 'Successfully deleted hospital group')
+    } else {
+        notifyUser(HmsNotificationEnum.ERROR, 'Delete Failure', 'Failed to delete hospital group')
     }
+}
+
+const notifyUser = (type: HmsNotificationEnum, title: string, msg: string, duration?: number) => {
+    addNotification(
+        {
+            type: type,
+            title: title,
+            message: msg,
+            duration: duration
+        }
+    )
 }
 
 onMounted((): void => {
@@ -149,8 +165,8 @@ onBeforeUnmount((): void => {
 
         <!-- TreeView component with vertical lines -->
         <div class="border border-neutral-200 rounded p-4 bg-white shadow-sm">
-            <div class="font-sans select-none" v-if="hospitalStore.treeData.length">
-                <HmsTree :nodes="hospitalStore.treeData" @node-toggle="handleNodeToggle"
+            <div class="font-sans select-none" v-if="hospitalStore.hospitalGroupData.length">
+                <HmsTree :nodes="hospitalStore.hospitalGroupData" @node-toggle="handleNodeToggle"
                     @option-click="showContextMenu" />
             </div>
 
@@ -163,12 +179,13 @@ onBeforeUnmount((): void => {
         :style="{ top: position.y + 'px', left: position.x + 'px' }" />
 
     <HmsEditGroupModal v-if="isShowEditModal && activeNode" :id="activeNode.id || ''" :name="activeNode.label || ''"
-        @on-cancel="onEditGroupModalAction" @on-success="onEditGroupModalAction(true)" />
+        @on-cancel="isShowEditModal = false" @on-success="onEditGroupModalAction(true)"
+        @on-error="onEditGroupModalAction" />
 
     <HmsNewGroupModal v-if="isShowCreateGroupModal" :parent-id="activeNode?.id || null"
-        :is-root="activeNode ? false : true" @on-cancel="onCreateGroupModalAction"
-        @on-success="onCreateGroupModalAction(true)" />
+        :is-root="activeNode ? false : true" @on-cancel="isShowCreateGroupModal = false"
+        @on-success="onCreateGroupModalAction(true)" @on-error="onCreateGroupModalAction" />
 
     <HmsDeleteGroupModal v-if="isShowDeleteGroupModal && activeNode" :id="activeNode.id" :name="activeNode.label"
-        @on-cancel="onRemoveGroupModalAction" @on-success="onRemoveGroupModalAction(true)" />
+        @on-cancel="isShowDeleteGroupModal = false" @on-success="onRemoveGroupModalAction(true)" />
 </template>

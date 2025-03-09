@@ -12,6 +12,10 @@ import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { useHmsNotification } from '@/composables/useHmsNotification';
+import { HmsNotificationEnum } from '@/types/notification.type';
+const { addNotification } = useHmsNotification();
+
 const router = useRouter();
 const gotoHome = () => {
     router.push({
@@ -50,10 +54,23 @@ const onEditClinician = (selectedClinician: Clinician) => {
     isShowAddModal.value = true;
 }
 
-const onAddEditClinicianModalAction = (isSuccess: boolean = false) => {
+const onAddEditClinicianModalAction = (isSuccess: boolean = false, errMsg: string = '') => {
     isShowAddModal.value = false;
+
     if (isSuccess) {
         clinicianStore.filterCliniciansForHospital(hospitalId.value, filter.value);
+
+        if (activeClinician.value?.id) {
+            notifyUser(HmsNotificationEnum.SUCCESS, 'Update Success', 'Successfully update clinician details')
+        } else {
+            notifyUser(HmsNotificationEnum.SUCCESS, 'Add Success', 'Successfully added clinician details')
+        }
+    } else {
+        if (activeClinician.value?.id) {
+            notifyUser(HmsNotificationEnum.ERROR, 'Update Failure', errMsg || 'Failed to update clinician details')
+        } else {
+            notifyUser(HmsNotificationEnum.ERROR, 'Add Failure', errMsg || 'Failed to add clinician details')
+        }
     }
     activeClinician.value = null;
 }
@@ -68,7 +85,13 @@ const onDeleteClinicianModalAction = (isSuccess: boolean = false) => {
     isShowDeleteModal.value = false;
     activeClinician.value = null;
     if (isSuccess) {
+    }
+
+    if (isSuccess) {
         clinicianStore.filterCliniciansForHospital(hospitalId.value, filter.value);
+        notifyUser(HmsNotificationEnum.SUCCESS, 'Delete Success', 'Successfully deleted clinician details')
+    } else {
+        notifyUser(HmsNotificationEnum.ERROR, 'Delete Failure', 'Failed to delete clinician details')
     }
 }
 
@@ -80,9 +103,19 @@ const getTableRowColor = (index: number) => {
 const countMetrics = computed(() => {
     const totalCount = clinicianData.value.filter((val) => val.hospital_id === hospitalId.value).length;
     const filteredCount = filteredData.value.length;
-    // return `${filteredCount} of ${totalCount} record${filteredCount > 1 ? 's' : ''} displayed`;
     return { totalCount: totalCount, filteredCount: filteredCount, suffix: `record${filteredCount > 1 ? 's' : ''} displayed` };
 })
+
+const notifyUser = (type: HmsNotificationEnum, title: string, msg: string, duration?: number) => {
+    addNotification(
+        {
+            type: type,
+            title: title,
+            message: msg,
+            duration: duration
+        }
+    )
+}
 
 watch(
     route,
@@ -172,11 +205,11 @@ watch(
 
     <HmsClinicianAddEditModal v-if="isShowAddModal" :hospital-id="hospitalGroup?.id || ''"
         :hospital-name="hospitalGroup?.label || ''" :id="activeClinician?.id" :first-name="activeClinician?.first_name"
-        :last-name="activeClinician?.last_name" @on-cancel="onAddEditClinicianModalAction"
-        @on-success="onAddEditClinicianModalAction(true)" />
+        :last-name="activeClinician?.last_name" @on-cancel="isShowAddModal = false"
+        @on-success="onAddEditClinicianModalAction(true)" @on-error="onAddEditClinicianModalAction" />
 
     <HmsDeleteClinicianModal v-if="isShowDeleteModal" :hospital-id="hospitalGroup?.id || ''"
         :id="activeClinician?.id || ''" :first-name="activeClinician?.first_name || ''"
-        :last-name="activeClinician?.last_name || ''" @on-cancel="onDeleteClinicianModalAction"
+        :last-name="activeClinician?.last_name || ''" @on-cancel="isShowDeleteModal = false"
         @on-success="onDeleteClinicianModalAction(true)" />
 </template>

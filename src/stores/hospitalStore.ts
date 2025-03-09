@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 import { useStorage } from '@vueuse/core'
 
 export const useHospitalStore = defineStore('hospital', () => {
-  const treeData = useStorage<HospitalGroupNode[]>('hospital-groups', [])
+  const hospitalGroupData = useStorage<HospitalGroupNode[]>('hospital-groups', [])
 
   function toggleNodeExpansion(nodeId: string) {
     const toggleNode = (nodes: HospitalGroupNode[]): boolean => {
@@ -21,17 +21,17 @@ export const useHospitalStore = defineStore('hospital', () => {
       return false
     }
 
-    toggleNode(treeData.value)
+    toggleNode(hospitalGroupData.value)
   }
 
   function addNode(parentId: string | null, newNode: HospitalGroupNode, callback: ICallback) {
     if (!parentId) {
       // Add to root level
-      treeData.value.push(newNode)
+      hospitalGroupData.value.push(newNode)
 
       if (
-        treeData.value.length > 0 &&
-        treeData.value[treeData.value.length - 1].id === newNode.id
+        hospitalGroupData.value.length > 0 &&
+        hospitalGroupData.value[hospitalGroupData.value.length - 1].id === newNode.id
       ) {
         callback(true)
       } else {
@@ -56,7 +56,7 @@ export const useHospitalStore = defineStore('hospital', () => {
       return false
     }
 
-    const result = addToParent(treeData.value)
+    const result = addToParent(hospitalGroupData.value)
     callback(result)
   }
 
@@ -78,7 +78,7 @@ export const useHospitalStore = defineStore('hospital', () => {
       return false
     }
 
-    const result = deleteFromNodes(treeData.value)
+    const result = deleteFromNodes(hospitalGroupData.value)
     callback(result)
   }
 
@@ -98,7 +98,7 @@ export const useHospitalStore = defineStore('hospital', () => {
       return false
     }
 
-    const result = updateInNodes(treeData.value)
+    const result = updateInNodes(hospitalGroupData.value)
     callback(result)
   }
 
@@ -118,11 +118,11 @@ export const useHospitalStore = defineStore('hospital', () => {
       return null
     }
 
-    return findNode(treeData.value)
+    return findNode(hospitalGroupData.value)
   }
 
   return {
-    treeData,
+    hospitalGroupData,
     toggleNodeExpansion,
     addNode,
     deleteNode,

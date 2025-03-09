@@ -7,7 +7,7 @@ import useVuelidate from '@vuelidate/core';
 import { useClinicianValidator } from '@/composables/useClinicianValidator';
 
 const props = defineProps<{ id: string, name: string }>();
-const emits = defineEmits(['onSuccess', 'onCancel'])
+const emits = defineEmits(['onSuccess', 'onError', 'onCancel'])
 const hospitalStore = useHospitalStore();
 const updatedGroupName = ref<string>('');
 
@@ -30,6 +30,13 @@ const onConfirm = async () => {
 
     const isValidData = await v$?.value.$validate();
     if (!isValidData) {
+        return;
+    }
+
+    // Check for duplicate hospital group name
+    const duplicateGroups = hospitalStore.hospitalGroupData.filter((x) => x.id !== props.id && x.label === updatedGroupName.value);
+    if (duplicateGroups.length) {
+        emits('onError', false, 'Another hospital group already exists with the same name')
         return;
     }
 
