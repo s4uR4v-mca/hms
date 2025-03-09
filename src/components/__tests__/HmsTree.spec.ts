@@ -63,7 +63,6 @@ describe('HmsTree', () => {
   it('fire expected emit on toggle click', async () => {
     const toggleElement = wrapper.find('[data-test="toggle"]')
     await toggleElement.trigger('click')
-    // await wrapper.vm.$nextTick()
     expect(wrapper.emitted('nodeToggle')).toBeTruthy()
   })
 
