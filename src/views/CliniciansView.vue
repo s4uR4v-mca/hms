@@ -39,10 +39,7 @@ const filter = ref<string>('');
 
 const { clinicianData, filteredData } = storeToRefs(clinicianStore);
 
-const onFilterClick = () => {
-    clinicianStore.filterCliniciansForHospital(hospitalId.value, filter.value)
-}
-
+// filter method for filtering clinician data
 const onFilterWithDebounce = (filter: string) => {
     clinicianStore.filterCliniciansForHospital(hospitalId.value, filter)
 }
@@ -50,15 +47,18 @@ const onFilterWithDebounce = (filter: string) => {
 const activeClinician = ref<Clinician | null>(null);
 
 const isShowAddModal = ref<boolean>(false);
+// click add clinician handled
 const onAddClinician = () => {
     isShowAddModal.value = true;
 }
 
+// click edit clinician handled
 const onEditClinician = (selectedClinician: Clinician) => {
     activeClinician.value = selectedClinician;
     isShowAddModal.value = true;
 }
 
+// handling emit from add/edit modal
 const onAddEditClinicianModalAction = (isSuccess: boolean = false, errMsg: string = '') => {
     isShowAddModal.value = false;
 
@@ -80,12 +80,15 @@ const onAddEditClinicianModalAction = (isSuccess: boolean = false, errMsg: strin
     activeClinician.value = null;
 }
 
+
 const isShowDeleteModal = ref<boolean>(false)
+// click delete clinician handled
 const onDeleteClinician = (selectedClinician: Clinician) => {
     activeClinician.value = selectedClinician;
     isShowDeleteModal.value = true;
 }
 
+// handling delete clinician emit from delete modal
 const onDeleteClinicianModalAction = (isSuccess: boolean = false) => {
     isShowDeleteModal.value = false;
     activeClinician.value = null;
@@ -100,17 +103,19 @@ const onDeleteClinicianModalAction = (isSuccess: boolean = false) => {
     }
 }
 
-
+// table row color dynamic class for coloring alternative row background
 const getTableRowColor = (index: number) => {
     return index % 2 === 0 ? 'bg-white' : 'bg-neutral-50'
 }
 
+// finding available vs filtered clinician count and exposing the data to the template through a computed variable
 const countMetrics = computed(() => {
     const totalCount = clinicianData.value.filter((val) => val.hospital_id === hospitalId.value).length;
     const filteredCount = filteredData.value.length;
     return { totalCount: totalCount, filteredCount: filteredCount, suffix: `record${filteredCount > 1 ? 's' : ''} displayed` };
 })
 
+// custom notification for success/failure actions
 const notifyUser = (type: HmsNotificationEnum, title: string, msg: string, duration?: number) => {
     addNotification(
         {
@@ -122,6 +127,7 @@ const notifyUser = (type: HmsNotificationEnum, title: string, msg: string, durat
     )
 }
 
+// Debounce watcher for watching the search input data
 watchDebounced(
     filter,
     (newValue) => {
@@ -130,6 +136,7 @@ watchDebounced(
     { debounce: 500, maxWait: 5000 }
 )
 
+// Route watcher to pick hospital id from the query param
 watch(
     route,
     async (routeValue) => {
@@ -178,15 +185,15 @@ watch(
                     }}</span> {{ countMetrics.suffix }}
             </p>
             <div class="flex place-items-center border border-neutral-400 bg-white rounded-md w-xs justify-between">
-                <input type="text" v-model="filter" class="px-4 py-1 text-sm focus:outline-none grow"
-                    placeholder="Search" @keyup.enter="onFilterClick" />
-                <PhMagnifyingGlass @click="onFilterClick"
-                    class="bg-neutral-200 p-2 text-neutral-600 m-0.5 rounded-tr-sm rounded-br-sm cursor-pointer hover:bg-neutral-300 hover:text-neutral-800"
-                    size="2rem" weight="bold" />
+                <PhMagnifyingGlass class="py-2 text-neutral-800 m-0.5 rounded-tl-sm rounded-bl-sm " size="2rem"
+                    weight="bold" />
+                <input type="text" v-model="filter" class="pr-4 py-1 text-sm focus:outline-none grow"
+                    placeholder="Search" />
+
             </div>
 
         </div>
-
+        <!-- Creating table to show the clinicians for hospital group -->
         <table class="w-full" v-if="filteredData.length">
             <thead>
                 <tr class="bg-neutral-100 border border-neutral-200">
@@ -216,11 +223,12 @@ watch(
             :msg="`Oops.. No clinicians found for ${hospitalGroup?.label} ${filter ? ` with filter: ${filter}` : ''}`" />
     </div>
 
+    <!-- Modal Component for add/edit actions -->
     <HmsClinicianAddEditModal v-if="isShowAddModal" :hospital-id="hospitalGroup?.id || ''"
         :hospital-name="hospitalGroup?.label || ''" :id="activeClinician?.id" :first-name="activeClinician?.first_name"
         :last-name="activeClinician?.last_name" @on-cancel="isShowAddModal = false"
         @on-success="onAddEditClinicianModalAction(true)" @on-error="onAddEditClinicianModalAction" />
-
+    <!-- Modal Component for deleting clinicians -->
     <HmsDeleteClinicianModal v-if="isShowDeleteModal" :hospital-id="hospitalGroup?.id || ''"
         :id="activeClinician?.id || ''" :first-name="activeClinician?.first_name || ''"
         :last-name="activeClinician?.last_name || ''" @on-cancel="isShowDeleteModal = false"

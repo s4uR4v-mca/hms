@@ -7,33 +7,36 @@ const props = defineProps<{
     parentId?: string;
     nodes: HospitalGroupNode[];
     indent?: number;
-    level?: number; // Track the nesting level
+    level?: number;
 }>();
 
 const emit = defineEmits(['nodeToggle', 'optionClick']);
 
-const defaultIndent = 6; // Using Tailwind spacing units (6 = 1.5rem)
+const defaultIndent = 6;
 const indentation = computed(() => props.indent || defaultIndent);
 const currentLevel = computed(() => props.level || 0);
 
+// emitting on toggle change call to then parent component
 function toggleNode(node: HospitalGroupNode) {
     emit('nodeToggle', node.id);
 }
 
-// Check if a node has children
+// checking if a node has children
 function hasChildren(node: HospitalGroupNode): boolean {
     return !!node.children && node.children.length > 0;
 }
 
-// Check if node is the last in its list
+// checking if node is the last in its list
 function isLastNode(index: number): boolean {
     return index === props.nodes.length - 1;
 }
 
+// handling option emit click from the child tree nodes that are recursively created
 function onChildOptionClickReceived(item: HospitalGroupNode, event: MouseEvent) {
     emit('optionClick', item, event);
 }
 
+// checking for root node
 const isRoot = computed(() => {
     return props.parentId == null;
 })
@@ -42,12 +45,12 @@ const isRoot = computed(() => {
 <template>
     <ul class="list-none p-0 m-0">
         <li v-for="(node, index) in nodes" :key="node.id" class="relative">
-            <!-- Vertical line from parent to this node (except for root level) -->
+            <!-- Drawing vertical line from parent to this node  -->
             <div v-if="currentLevel > 0" class="absolute border-l border-neutral-300"
                 style="top: 0; bottom: 0; left: -1.25rem;"></div>
 
             <div class="relative my-1">
-                <!-- Horizontal connector line -->
+                <!-- Adding Horizontal connector line -->
                 <div v-if="currentLevel > 0" class="absolute border-t border-neutral-300 w-4"
                     style="top: 50%; left: -1.25rem;"></div>
 

@@ -39,7 +39,7 @@ const onConfirm = async () => {
         return;
     }
 
-    // Check for duplicate clinician name
+    // checking for duplicate clinician name
     const duplicateClinicians = clinicianStore.clinicianData.filter((x) => x.hospital_id === props.hospitalId && x.id !== props.id && x.first_name === newFirstName.value && x.last_name === newLastName.value);
     if (duplicateClinicians.length) {
         emits('onError', false, 'Clinicians exists with same name for this hospital group');
@@ -93,23 +93,24 @@ onBeforeMount(() => {
 
             <div class="relative px-4 rounded-md py-4 z-10 w-full max-w-md bg-white shadow-2xl overflow-hidden mb-[12rem]"
                 @click.stop>
-                <CommonModalHeader :title="titleText" @on-close="onClose" />
+                <CommonModalHeader :title="titleText" @on-close="onClose" data-test="header" />
 
                 <div class="flex flex-col my-8">
-                    <p class="text-neutral-800 text-sm m-1">{{ msg }}<span class="text-neutral-800 font-semibold">{{
-                        props.hospitalName }}</span></p>
-                    <input v-model="newFirstName"
+                    <p data-test="info-label" class="text-neutral-800 text-sm m-1">{{ msg }}<span
+                            class="text-neutral-800 font-semibold">{{
+                                props.hospitalName }}</span></p>
+                    <input v-model="newFirstName" data-test="input-fname"
                         class="px-4 py-2 border border-neutral-300  rounded-md focus:border-neutral-700 focus:outline-none mb-3"
                         placeholder="Enter First Name" />
                     <span class="ml-2 block text-sm text-red-500">
                         {{ v$.newFirstName.$errors[0]?.$message }}
                     </span>
-                    <input v-model="newLastName"
+                    <input v-model="newLastName" data-test="input-lname"
                         class="px-4 py-2 border border-neutral-300  rounded-md focus:border-neutral-700 focus:outline-none"
                         placeholder="Enter Last Name" />
                 </div>
 
-                <CommonModalFooter :button-text="buttonText" @on-confirm="onConfirm" />
+                <CommonModalFooter :button-text="buttonText" @on-confirm="onConfirm" data-test="footer" />
             </div>
         </div>
     </Teleport>

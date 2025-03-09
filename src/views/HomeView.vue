@@ -28,10 +28,10 @@ const handleNodeToggle = (nodeId: string) => {
 const isShowContextMenu = ref<boolean>(false);
 const position = ref<{ x: number, y: number }>({ x: 0, y: 0 });
 const contextMenuRef = ref<HTMLDivElement | null>(null);
-const divRefs = ref<HTMLElement[]>([]);
 const activeNode = ref<HospitalGroupNode | null>(null);
 
 
+// showing the context menu
 const showContextMenu = (item: HospitalGroupNode, e: MouseEvent): void => {
     hideContextMenu(e);
 
@@ -60,21 +60,17 @@ const showContextMenu = (item: HospitalGroupNode, e: MouseEvent): void => {
     e.stopPropagation();
 };
 
+// hiding context menu
 const hideContextMenu = (e: MouseEvent): void => {
     if (contextMenuRef.value && contextMenuRef.value.contains(e.target as HTMLUListElement)) {
         return;
     }
-
-    const isButton = divRefs.value.some(btn => btn && btn.contains(e.target as Node));
-    if (isButton) {
-        return;
-    }
-
     isShowContextMenu.value = false;
 };
 
 
 const isShowEditModal = ref<boolean>(false);
+// handling edit hospital group emit from edit modal
 const onEditGroupModalAction = (isSuccess: boolean = false, errMsg: string = '') => {
     isShowEditModal.value = false;
     activeNode.value = null;
@@ -91,10 +87,12 @@ const onEditGroup = () => {
 }
 
 const isShowCreateGroupModal = ref<boolean>(false);
+// handling context menu emit for create action
 const onCreateGroup = () => {
     isShowCreateGroupModal.value = true;
 }
 
+// handling create hospital group emit from create modal
 const onCreateGroupModalAction = (isSuccess: boolean = false, errMsg: string = '') => {
     isShowCreateGroupModal.value = false;
     activeNode.value = null;
@@ -106,6 +104,7 @@ const onCreateGroupModalAction = (isSuccess: boolean = false, errMsg: string = '
     }
 }
 
+// handling context menu emit for add/remove clinicians
 const onAddRemoveClinician = () => {
     if (activeNode.value) {
         const queryParam = {
@@ -119,11 +118,13 @@ const onAddRemoveClinician = () => {
 }
 
 const isShowDeleteGroupModal = ref<boolean>(false);
+// handling context menu emit for delete action
 const onRemoveGroup = () => {
     isShowDeleteGroupModal.value = true;
 }
 
-const onRemoveGroupModalAction = (isSuccess: boolean = false) => {
+// handling delete hospital group emit from delete modal
+const onDeleteGroupModalAction = (isSuccess: boolean = false) => {
     isShowDeleteGroupModal.value = false;
     activeNode.value = null;
     if (isSuccess) {
@@ -133,6 +134,7 @@ const onRemoveGroupModalAction = (isSuccess: boolean = false) => {
     }
 }
 
+// custom notification for success/failure actions
 const notifyUser = (type: HmsNotificationEnum, title: string, msg: string, duration?: number) => {
     addNotification(
         {
@@ -163,7 +165,7 @@ onBeforeUnmount((): void => {
             </button>
         </div>
 
-        <!-- TreeView component with vertical lines -->
+        <!-- Tree view component for creating the first root level nodes -->
         <div class="border border-neutral-200 rounded p-4 bg-white shadow-sm">
             <div class="font-sans select-none" v-if="hospitalStore.hospitalGroupData.length">
                 <HmsTree :nodes="hospitalStore.hospitalGroupData" @node-toggle="handleNodeToggle"
@@ -175,18 +177,22 @@ onBeforeUnmount((): void => {
         </div>
     </div>
 
+    <!-- Context menu component for showing action options  -->
     <HmsOptionMenu v-if="isShowContextMenu" @on-edit-group="onEditGroup" @on-add-remove-clinician="onAddRemoveClinician"
         @on-create-child-group="onCreateGroup" @on-remove-group="onRemoveGroup"
         :style="{ top: position.y + 'px', left: position.x + 'px' }" />
 
+    <!-- Modal component for editing hospital group  -->
     <HmsEditGroupModal v-if="isShowEditModal && activeNode" :id="activeNode.id || ''" :name="activeNode.label || ''"
         @on-cancel="isShowEditModal = false" @on-success="onEditGroupModalAction(true)"
         @on-error="onEditGroupModalAction" />
 
+    <!-- Modal component for adding hospital group  -->
     <HmsAddGroupModal v-if="isShowCreateGroupModal" :parent-id="activeNode?.id || null"
         :is-root="activeNode ? false : true" @on-cancel="isShowCreateGroupModal = false"
         @on-success="onCreateGroupModalAction(true)" @on-error="onCreateGroupModalAction" />
 
+    <!-- Modal component for deleting hospital group  -->
     <HmsDeleteGroupModal v-if="isShowDeleteGroupModal && activeNode" :id="activeNode.id" :name="activeNode.label"
-        @on-cancel="isShowDeleteGroupModal = false" @on-success="onRemoveGroupModalAction(true)" />
+        @on-cancel="isShowDeleteGroupModal = false" @on-success="onDeleteGroupModalAction(true)" />
 </template>

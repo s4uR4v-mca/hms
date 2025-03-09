@@ -11,7 +11,8 @@ const buttonStyle = computed(() => {
 
 <template>
     <div class="flex justify-end">
-        <button @click="emits('onConfirm')" class="  font-medium py-2 px-4 rounded cursor-pointer" :class="buttonStyle">
+        <button @click="emits('onConfirm')" class="  font-medium py-2 px-4 rounded cursor-pointer" :class="buttonStyle"
+            data-test="confirm-btn">
             {{ props.buttonText }}
         </button>
     </div>
