@@ -1,4 +1,4 @@
-# hms
+# HMS (Hospital Management System)
 
 #### This front end application is created using:
 - Vue 3 Composition API
