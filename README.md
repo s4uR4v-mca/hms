@@ -1,6 +1,20 @@
 # hms
 
-This template should help get you started developing with Vue 3 in Vite.
+#### This front end application is created using:
+- Vue 3 Composition API
+- Typescript
+- Pinia (state managemaent)
+- Vitest (unit test cases)
+  
+#### Following are some of the additional libraries used in this project other than the ones provided during default Vue 3 project set up
+- Tailwind Css
+- VueUse
+- Vuelidate
+- Phosphor Icons
+  
+#### Formatting and linting libraries used
+- EsLint
+- Prettier
 
 ## Project Setup
 
